@@ -4,12 +4,17 @@ from django.http import HttpResponse
 from .models import Account
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
+import requests
+
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+
+from carts.models import Cart, CartItem
+from carts.utils import _cartid
 
 # Create your views here.
 def register(request):
@@ -62,9 +67,63 @@ def login(request):
 
         user = auth.authenticate(email=email, password=password)
         if user is not None:
+            try:
+                cart = Cart.objects.get(cart_id=_cartid(request))
+                cart_item_exists = CartItem.objects.filter(cart=cart).exists()
+
+                # 
+                if cart_item_exists:
+                    cart_items = CartItem.objects.filter(cart=cart)
+
+                    # Getting the product variations by cart id
+                    product_variation = []
+                    for item in cart_items:
+                        variation = item.variations.all()
+                        product_variation.append(list(variation))
+
+                    # Get the cart items from the user to access his product variations
+                    cart_items = CartItem.objects.filter(user=user)
+                    ex_var_list = []
+                    id_list = []
+
+                    for item in cart_items:
+                        existing_variation = item.variations.all()
+                        ex_var_list.append(list(existing_variation))
+                        id_list.append(item.id)
+
+                    for pr in product_variation:
+                        if pr in ex_var_list:
+                            index = ex_var_list.index(pr)
+                            item_id = id_list[index]
+
+                            item = CartItem.objects.get(id=item_id)
+                            item.quantity += 1
+                            item.user = user
+                            item.save()
+
+                        else:
+                            cart_items = CartItem.objects.filter(cart=cart)
+                            for item in cart_items:
+                                item.user = user
+                                item.save()
+            except:
+                pass
             auth.login(request, user)
             messages.success(request, 'You are now logged in!')
-            return redirect('dashboard')
+            url = request.META.get('HTTP_REFERER')
+            try:
+                # Extracting the query string: "next=/cart/checkout/"
+                query = requests.utils.urlparse(url).query
+
+                # convert the string into Python Dictionary
+                params = dict(x.split('=') for x in query.split('&'))
+                # Check if 'next' exists in the dictionary
+                if 'next' in params:
+                    next_page = params['next']
+                    return redirect(next_page)
+
+            except:
+                return redirect('dashboard')
         else:
             messages.error(request, 'Invalid login credentials!')
             return redirect('login')

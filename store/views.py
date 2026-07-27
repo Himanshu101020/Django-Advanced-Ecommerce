@@ -7,7 +7,7 @@ from carts.models import CartItem
 
 from .models import Product
 from category.models import Category
-from carts.views import _cartid
+from carts.utils import _cartid
 
 # Create your views here.
 def store(request, category_slug=None):
