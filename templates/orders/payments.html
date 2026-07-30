@@ -197,7 +197,8 @@
         })
         .then((response) => response.json())
         .then((data) => {
-            console.log('Success:', data);
+            var redirect_url = "{% url 'order_complete' %}"
+            window.location.href = redirect_url + '?order_number='+ data.order_number + '&payment_id='+ data.transID; 
         });
     } 
 </script>
