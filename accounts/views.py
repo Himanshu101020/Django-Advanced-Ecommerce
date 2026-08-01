@@ -110,20 +110,26 @@ def login(request):
                 pass
             auth.login(request, user)
             messages.success(request, 'You are now logged in!')
-            url = request.META.get('HTTP_REFERER')
-            try:
-                # Extracting the query string: "next=/cart/checkout/"
-                query = requests.utils.urlparse(url).query
 
-                # convert the string into Python Dictionary
-                params = dict(x.split('=') for x in query.split('&'))
-                # Check if 'next' exists in the dictionary
-                if 'next' in params:
-                    next_page = params['next']
-                    return redirect(next_page)
-
-            except:
+            url = request.GET.get('next')
+            if url:
+                return redirect(url)
+            else:
                 return redirect('dashboard')
+            # url = request.META.get('HTTP_REFERER')
+            # try:
+            #     # Extracting the query string: "next=/cart/checkout/"
+            #     query = requests.utils.urlparse(url).query
+
+            #     # convert the string into Python Dictionary
+            #     params = dict(x.split('=') for x in query.split('&'))
+            #     # Check if 'next' exists in the dictionary
+            #     if 'next' in params:
+            #         next_page = params['next']
+            #         return redirect(next_page)
+
+            # except:
+            #     return redirect('dashboard')
         else:
             messages.error(request, 'Invalid login credentials!')
             return redirect('login')

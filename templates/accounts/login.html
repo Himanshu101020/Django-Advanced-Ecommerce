@@ -18,7 +18,7 @@
       <div class="card-body">
       {% include 'includes/alerts.html' %}
       <h4 class="card-title mb-4">Sign in</h4>
-      <form action="{% url 'login' %}" method="POST">
+      <form action="" method="POST">
         {% csrf_token %}
           <div class="form-group">
 			 <input type="email" name="email" class="form-control" placeholder="Email Address" >
