@@ -17,3 +17,20 @@
 		</section>
 	</div>
 </footer>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        // When any <a> tag inside the .thumb class is clicked
+        $('.thumb a').click(function(e){
+            
+            // Stop the browser from following the link to a new page
+            e.preventDefault(); 
+            
+            // Find the main image tag and change its src attribute to match the clicked thumbnail's href
+            $('.mainImage img').attr('src', $(this).attr('href'));
+        });
+    });
+</script>
+
+
